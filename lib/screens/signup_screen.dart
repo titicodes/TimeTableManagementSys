@@ -3,20 +3,26 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 
 class SignupScreen extends StatefulWidget {
-  const SignupScreen({super.key});
+  const SignupScreen({Key? key}) : super(key: key);
 
   @override
   _SignupScreenState createState() => _SignupScreenState();
 }
 
 class _SignupScreenState extends State<SignupScreen> {
-  final _auth = FirebaseAuth.instance;
-  final _emailController = TextEditingController();
-  final _passwordController = TextEditingController();
+  final FirebaseAuth _auth = FirebaseAuth.instance;
+  final TextEditingController _emailController = TextEditingController();
+  final TextEditingController _passwordController = TextEditingController();
   String _selectedRole = 'student'; // Default role
+  bool _isLoading = false;
 
   void _signup() async {
+    setState(() {
+      _isLoading = true;
+    });
+
     try {
+      // Create user in Firebase Authentication
       UserCredential userCredential = await _auth.createUserWithEmailAndPassword(
         email: _emailController.text.trim(),
         password: _passwordController.text.trim(),
@@ -31,18 +37,24 @@ class _SignupScreenState extends State<SignupScreen> {
           'role': _selectedRole,
         });
 
-        // Navigate to the appropriate home screen based on role
-        if (_selectedRole == 'admin') {
-          Navigator.pushReplacementNamed(context, '/adminHome');
-        } else if (_selectedRole == 'lecturer') {
-          Navigator.pushReplacementNamed(context, '/lecturerHome');
-        } else if (_selectedRole == 'student') {
-          Navigator.pushReplacementNamed(context, '/studentHome');
-        }
+        // Show a success message
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Signup successful! Please log in.')),
+        );
+
+        // Navigate to the login screen
+        Navigator.pushReplacementNamed(context, '/login');
       }
     } catch (e) {
       print(e);
       // Show error message to the user
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Failed to sign up: ${e.toString()}')),
+      );
+    } finally {
+      setState(() {
+        _isLoading = false;
+      });
     }
   }
 
@@ -58,12 +70,15 @@ class _SignupScreenState extends State<SignupScreen> {
             TextField(
               controller: _emailController,
               decoration: const InputDecoration(labelText: 'Email'),
+              keyboardType: TextInputType.emailAddress,
             ),
+            const SizedBox(height: 10),
             TextField(
               controller: _passwordController,
               decoration: const InputDecoration(labelText: 'Password'),
               obscureText: true,
             ),
+            const SizedBox(height: 20),
             DropdownButton<String>(
               value: _selectedRole,
               items: const [
@@ -78,10 +93,12 @@ class _SignupScreenState extends State<SignupScreen> {
               },
             ),
             const SizedBox(height: 20),
-            ElevatedButton(
-              onPressed: _signup,
-              child: const Text('Signup'),
-            ),
+            _isLoading
+                ? const CircularProgressIndicator()
+                : ElevatedButton(
+                    onPressed: _signup,
+                    child: const Text('Signup'),
+                  ),
           ],
         ),
       ),
