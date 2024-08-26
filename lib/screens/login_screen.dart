@@ -41,7 +41,6 @@ class _LoginScreenState extends State<LoginScreen> {
 
         String role = userDoc['role'];
 
-        // Navigate to the appropriate home screen based on role
         if (role == 'admin') {
           Navigator.pushReplacement(
             context,
@@ -82,7 +81,7 @@ class _LoginScreenState extends State<LoginScreen> {
   void _navigateToQRLogin() {
     Navigator.push(
       context,
-      MaterialPageRoute(builder: (context) => ScanQRCodeScreen()),
+      MaterialPageRoute(builder: (context) => const ScanQRCodeScreen()),
     );
   }
 
@@ -122,16 +121,17 @@ class _LoginScreenState extends State<LoginScreen> {
                   : ElevatedButton(
                       onPressed: _login,
                       style: ElevatedButton.styleFrom(
-                        padding: const EdgeInsets.symmetric(horizontal: 100, vertical: 15),
+                        padding: const EdgeInsets.symmetric(
+                            horizontal: 100, vertical: 15),
                       ),
                       child: const Text('Login'),
                     ),
-              const SizedBox(height: 15),
+              const SizedBox(height: 20),
               TextButton(
                 onPressed: _navigateToSignup,
                 child: const Text('Create an Account'),
               ),
-              const SizedBox(height: 10),
+              const SizedBox(height: 20),
               TextButton.icon(
                 onPressed: _navigateToQRLogin,
                 icon: const Icon(Icons.qr_code_scanner),

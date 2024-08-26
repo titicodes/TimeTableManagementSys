@@ -122,7 +122,7 @@ class _AdminManageUsersScreenState extends State<AdminManageUsersScreen> {
                       ? const Text('No users found')
                       : ListView.builder(
                           shrinkWrap: true,
-                          physics: NeverScrollableScrollPhysics(),
+                          physics: const NeverScrollableScrollPhysics(),
                           itemCount: _users.length,
                           itemBuilder: (context, index) {
                             var user = _users[index];

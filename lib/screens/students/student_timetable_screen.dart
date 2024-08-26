@@ -1,14 +1,14 @@
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 
-class LecturerTimetableScreen extends StatelessWidget {
-  const LecturerTimetableScreen({super.key});
+class StudentTimetableScreen extends StatelessWidget {
+  const StudentTimetableScreen({super.key});
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Lecturer Timetable'),
+        title: const Text('Student Timetable'),
       ),
       body: StreamBuilder(
         stream: FirebaseFirestore.instance.collection('timetables').snapshots(),
@@ -39,13 +39,6 @@ class LecturerTimetableScreen extends StatelessWidget {
                       Text('Venue: ${timetable['venue']}'),
                       Text('Day: ${timetable['day']}'),
                     ],
-                  ),
-                  // If lecturers are allowed to edit their timetable
-                  trailing: IconButton(
-                    icon: const Icon(Icons.edit),
-                    onPressed: () {
-                      // Implement edit functionality here if required
-                    },
                   ),
                 ),
               );
