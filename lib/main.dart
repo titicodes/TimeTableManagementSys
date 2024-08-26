@@ -27,18 +27,16 @@ class MyApp extends StatelessWidget {
       theme: ThemeData(
         primarySwatch: Colors.blue,
       ),
-      initialRoute: '/',
+      home: const LoginScreen(), // Set the home screen to the login screen
       routes: {
-        '/': (context) => LoginScreen(),
+        '/login': (context) => const LoginScreen(),
         '/signup': (context) => const SignupScreen(),
         '/adminHome': (context) => const AdminHomeScreen(),
         '/lecturerHome': (context) => const LecturerHomeScreen(),
         '/studentHome': (context) => const StudentHomeScreen(),
         '/generateQRCode': (context) => const GenerateQRCodeScreen(),
-        '/scanQRCode': (context) => ScanQRCodeScreen(),
-        '/adminManageUsers': (context) =>
-            AdminManageUsersScreen(), // Add this route
-        // Add other routes as needed
+        '/scanQRCode': (context) => const ScanQRCodeScreen(),
+        '/adminManageUsers': (context) => const AdminManageUsersScreen(),
       },
     );
   }
