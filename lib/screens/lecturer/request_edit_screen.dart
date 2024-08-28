@@ -41,25 +41,63 @@ class _RequestEditScreenState extends State<RequestEditScreen> {
     return Scaffold(
       appBar: AppBar(
         title: const Text('Request Timetable Edit'),
+        centerTitle: true,
+        backgroundColor: Colors.blueAccent,
       ),
       body: Padding(
         padding: const EdgeInsets.all(16.0),
-        child: Column(
-          children: [
-            TextField(
-              controller: _courseController,
-              decoration: const InputDecoration(labelText: 'Course'),
+        child: SingleChildScrollView(
+          child: Card(
+            elevation: 5,
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(12.0),
             ),
-            TextField(
-              controller: _reasonController,
-              decoration: const InputDecoration(labelText: 'Reason for Request'),
+            child: Padding(
+              padding: const EdgeInsets.all(16.0),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  TextField(
+                    controller: _courseController,
+                    decoration: InputDecoration(
+                      labelText: 'Course',
+                      border: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(8.0),
+                      ),
+                      filled: true,
+                      fillColor: Colors.grey[200],
+                    ),
+                  ),
+                  const SizedBox(height: 16),
+                  TextField(
+                    controller: _reasonController,
+                    decoration: InputDecoration(
+                      labelText: 'Reason for Request',
+                      border: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(8.0),
+                      ),
+                      filled: true,
+                      fillColor: Colors.grey[200],
+                    ),
+                    maxLines: 3, // Allow multiple lines for the reason
+                  ),
+                  const SizedBox(height: 20),
+                  ElevatedButton(
+                    style: ElevatedButton.styleFrom(
+                      padding: const EdgeInsets.symmetric(vertical: 12.0),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(8.0),
+                      ),
+                      backgroundColor: Colors.blueAccent,
+                    ),
+                    onPressed: _submitRequest,
+                    child: const Text('Submit Request',
+                        style: TextStyle(fontSize: 16)),
+                  ),
+                ],
+              ),
             ),
-            const SizedBox(height: 20),
-            ElevatedButton(
-              onPressed: _submitRequest,
-              child: const Text('Submit Request'),
-            ),
-          ],
+          ),
         ),
       ),
     );

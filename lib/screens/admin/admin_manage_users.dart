@@ -12,6 +12,8 @@ class AdminManageUsersScreen extends StatefulWidget {
 class _AdminManageUsersScreenState extends State<AdminManageUsersScreen> {
   final _emailController = TextEditingController();
   final _passwordController = TextEditingController();
+  final _nameController = TextEditingController();
+  final _dobController = TextEditingController();
   String _selectedRole = 'lecturer'; // Default role
   bool _isLoading = true;
   List<DocumentSnapshot> _users = [];
@@ -24,8 +26,8 @@ class _AdminManageUsersScreenState extends State<AdminManageUsersScreen> {
 
   void _createUser() async {
     try {
-      // Create user in Firebase Authentication
-      UserCredential userCredential = await FirebaseAuth.instance.createUserWithEmailAndPassword(
+      UserCredential userCredential =
+          await FirebaseAuth.instance.createUserWithEmailAndPassword(
         email: _emailController.text.trim(),
         password: _passwordController.text.trim(),
       );
@@ -33,22 +35,24 @@ class _AdminManageUsersScreenState extends State<AdminManageUsersScreen> {
       User? user = userCredential.user;
 
       if (user != null) {
-        // Store the user's role in Firestore
         await FirebaseFirestore.instance.collection('users').doc(user.uid).set({
           'email': _emailController.text.trim(),
+          'name': _nameController.text.trim(),
+          'dob': _dobController.text.trim(),
           'role': _selectedRole,
         });
 
         // Clear the form fields
         _emailController.clear();
         _passwordController.clear();
+        _nameController.clear();
+        _dobController.clear();
 
         ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
           content: Text('User created successfully!'),
         ));
 
-        // Refresh user list
-        _fetchUsers();
+        _fetchUsers(); // Refresh user list
       }
     } catch (e) {
       ScaffoldMessenger.of(context).showSnackBar(SnackBar(
@@ -62,7 +66,8 @@ class _AdminManageUsersScreenState extends State<AdminManageUsersScreen> {
       _isLoading = true;
     });
 
-    QuerySnapshot snapshot = await FirebaseFirestore.instance.collection('users').get();
+    QuerySnapshot snapshot =
+        await FirebaseFirestore.instance.collection('users').get();
 
     setState(() {
       _users = snapshot.docs;
@@ -74,8 +79,7 @@ class _AdminManageUsersScreenState extends State<AdminManageUsersScreen> {
     await FirebaseFirestore.instance.collection('users').doc(userId).delete();
     _fetchUsers(); // Refresh the list after deletion
     ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(content: Text('User deleted successfully')),
-    );
+        const SnackBar(content: Text('User deleted successfully')));
   }
 
   @override
@@ -91,13 +95,30 @@ class _AdminManageUsersScreenState extends State<AdminManageUsersScreen> {
             children: [
               TextField(
                 controller: _emailController,
-                decoration: const InputDecoration(labelText: 'Email'),
+                decoration: const InputDecoration(
+                    labelText: 'Email', border: OutlineInputBorder()),
               ),
+              const SizedBox(height: 16.0), // Added space
               TextField(
                 controller: _passwordController,
-                decoration: const InputDecoration(labelText: 'Password'),
+                decoration: const InputDecoration(
+                    labelText: 'Password', border: OutlineInputBorder()),
                 obscureText: true,
               ),
+              const SizedBox(height: 16.0), // Added space
+              TextField(
+                controller: _nameController,
+                decoration: const InputDecoration(
+                    labelText: 'Name', border: OutlineInputBorder()),
+              ),
+              const SizedBox(height: 16.0), // Added space
+              TextField(
+                controller: _dobController,
+                decoration: const InputDecoration(
+                    labelText: 'Date of Birth (YYYY-MM-DD)',
+                    border: OutlineInputBorder()),
+              ),
+              const SizedBox(height: 16.0), // Added space
               DropdownButton<String>(
                 value: _selectedRole,
                 items: const [
@@ -110,12 +131,12 @@ class _AdminManageUsersScreenState extends State<AdminManageUsersScreen> {
                   });
                 },
               ),
-              const SizedBox(height: 20),
+              const SizedBox(height: 20), // Added space before button
               ElevatedButton(
                 onPressed: _createUser,
                 child: const Text('Create User'),
               ),
-              const SizedBox(height: 30),
+              const SizedBox(height: 30), // Added space before user list
               _isLoading
                   ? const CircularProgressIndicator()
                   : _users.isEmpty
@@ -130,10 +151,12 @@ class _AdminManageUsersScreenState extends State<AdminManageUsersScreen> {
                               leading: CircleAvatar(
                                 child: Text(user['email'][0].toUpperCase()),
                               ),
-                              title: Text(user['email']),
-                              subtitle: Text('Role: ${user['role']}'),
+                              title: Text(user['name'] ?? 'N/A'),
+                              subtitle: Text(
+                                  'Email: ${user['email'] ?? 'N/A'}\nRole: ${user['role'] ?? 'N/A'}\nDOB: ${user['dob'] ?? 'N/A'}'),
                               trailing: IconButton(
-                                icon: const Icon(Icons.delete, color: Colors.red),
+                                icon:
+                                    const Icon(Icons.delete, color: Colors.red),
                                 onPressed: () {
                                   _showDeleteConfirmationDialog(user.id);
                                 },

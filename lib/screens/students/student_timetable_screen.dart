@@ -9,10 +9,12 @@ class StudentTimetableScreen extends StatelessWidget {
     return Scaffold(
       appBar: AppBar(
         title: const Text('Student Timetable'),
+        centerTitle: true,
+        backgroundColor: Colors.blueAccent,
       ),
-      body: StreamBuilder(
+      body: StreamBuilder<QuerySnapshot>(
         stream: FirebaseFirestore.instance.collection('timetables').snapshots(),
-        builder: (context, AsyncSnapshot<QuerySnapshot> snapshot) {
+        builder: (context, snapshot) {
           if (!snapshot.hasData) {
             return const Center(child: CircularProgressIndicator());
           }
@@ -20,26 +22,45 @@ class StudentTimetableScreen extends StatelessWidget {
           final timetables = snapshot.data!.docs;
 
           if (timetables.isEmpty) {
-            return const Center(child: Text('No timetable available'));
+            return const Center(
+                child: Text('No timetable available',
+                    style: TextStyle(fontSize: 18)));
           }
 
           return ListView.builder(
+            padding: const EdgeInsets.all(16.0),
             itemCount: timetables.length,
             itemBuilder: (context, index) {
               final timetable = timetables[index];
               return Card(
-                margin: const EdgeInsets.all(8.0),
+                margin: const EdgeInsets.symmetric(vertical: 8.0),
+                elevation: 4,
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(12.0),
+                ),
                 child: ListTile(
-                  title: Text(timetable['courseName']),
-                  subtitle: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text('Lecturer: ${timetable['lecturer']}'),
-                      Text('Time: ${timetable['time']}'),
-                      Text('Venue: ${timetable['venue']}'),
-                      Text('Day: ${timetable['day']}'),
-                    ],
+                  title: Text(
+                    timetable['courseName'],
+                    style: const TextStyle(
+                        fontWeight: FontWeight.bold, fontSize: 18),
                   ),
+                  subtitle: Padding(
+                    padding: const EdgeInsets.only(top: 8.0),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text('Lecturer: ${timetable['lecturer']}',
+                            style: TextStyle(color: Colors.grey[700])),
+                        Text('Time: ${timetable['time']}',
+                            style: TextStyle(color: Colors.grey[700])),
+                        Text('Venue: ${timetable['venue']}',
+                            style: TextStyle(color: Colors.grey[700])),
+                        Text('Day: ${timetable['day']}',
+                            style: TextStyle(color: Colors.grey[700])),
+                      ],
+                    ),
+                  ),
+                  contentPadding: const EdgeInsets.all(16.0),
                 ),
               );
             },

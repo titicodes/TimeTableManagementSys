@@ -23,7 +23,7 @@ class _SignupScreenState extends State<SignupScreen> {
   Future<void> _selectDob(BuildContext context) async {
     final DateTime? picked = await showDatePicker(
       context: context,
-      initialDate: DateTime(2000),
+      initialDate: DateTime.now(),
       firstDate: DateTime(1900),
       lastDate: DateTime.now(),
     );
@@ -69,7 +69,6 @@ class _SignupScreenState extends State<SignupScreen> {
         Navigator.pushReplacementNamed(context, '/login');
       }
     } catch (e) {
-      print(e);
       // Show error message to the user
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text('Failed to sign up: ${e.toString()}')),
@@ -93,34 +92,43 @@ class _SignupScreenState extends State<SignupScreen> {
             children: [
               TextField(
                 controller: _fullNameController,
-                decoration: const InputDecoration(labelText: 'Full Name'),
+                decoration: const InputDecoration(
+                  labelText: 'Full Name',
+                  border: OutlineInputBorder(),
+                ),
               ),
               const SizedBox(height: 10),
-              Row(
-                children: [
-                  Expanded(
-                    child: Text(
-                      _selectedDob == null
-                          ? 'Select Date of Birth'
-                          : 'Date of Birth: ${DateFormat('yyyy-MM-dd').format(_selectedDob!)}',
-                    ),
+              GestureDetector(
+                onTap: () => _selectDob(context),
+                child: InputDecorator(
+                  decoration: InputDecoration(
+                    labelText: 'Date of Birth',
+                    border: OutlineInputBorder(),
+                    suffixIcon: const Icon(Icons.calendar_today),
                   ),
-                  ElevatedButton(
-                    onPressed: () => _selectDob(context),
-                    child: const Text('Pick DOB'),
+                  child: Text(
+                    _selectedDob == null
+                        ? 'Select Date of Birth'
+                        : DateFormat('yyyy-MM-dd').format(_selectedDob!),
                   ),
-                ],
+                ),
               ),
               const SizedBox(height: 10),
               TextField(
                 controller: _emailController,
-                decoration: const InputDecoration(labelText: 'Email'),
+                decoration: const InputDecoration(
+                  labelText: 'Email',
+                  border: OutlineInputBorder(),
+                ),
                 keyboardType: TextInputType.emailAddress,
               ),
               const SizedBox(height: 10),
               TextField(
                 controller: _passwordController,
-                decoration: const InputDecoration(labelText: 'Password'),
+                decoration: const InputDecoration(
+                  labelText: 'Password',
+                  border: OutlineInputBorder(),
+                ),
                 obscureText: true,
               ),
               const SizedBox(height: 20),
@@ -144,6 +152,19 @@ class _SignupScreenState extends State<SignupScreen> {
                       onPressed: _signup,
                       child: const Text('Signup'),
                     ),
+              const SizedBox(height: 20),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  const Text("Already have an account? "),
+                  TextButton(
+                    onPressed: () {
+                      Navigator.pushReplacementNamed(context, '/login');
+                    },
+                    child: const Text('Login'),
+                  ),
+                ],
+              ),
             ],
           ),
         ),

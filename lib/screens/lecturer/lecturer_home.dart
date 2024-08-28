@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:timetable_management_system/screens/profile_screen.dart';
-
 import 'view_timetable_screen.dart';
 
 class LecturerHomeScreen extends StatefulWidget {
@@ -29,6 +28,9 @@ class _LecturerHomeScreenState extends State<LecturerHomeScreen> {
     return Scaffold(
       appBar: AppBar(
         title: const Text('Lecturer Dashboard'),
+        centerTitle: true,
+        backgroundColor: Colors.blueAccent,
+        elevation: 4,
       ),
       body: Center(
         child: _widgetOptions.elementAt(_selectedIndex),
@@ -45,8 +47,19 @@ class _LecturerHomeScreenState extends State<LecturerHomeScreen> {
           ),
         ],
         currentIndex: _selectedIndex,
-        selectedItemColor: Colors.blue,
+        selectedItemColor: Colors.blueAccent,
+        unselectedItemColor: Colors.grey,
+        selectedLabelStyle: const TextStyle(fontWeight: FontWeight.bold),
+        unselectedLabelStyle: const TextStyle(color: Colors.black54),
         onTap: _onItemTapped,
+        elevation: 8,
+      ),
+      floatingActionButton: FloatingActionButton(
+        onPressed: () {
+          // Action for the floating button if needed
+        },
+        backgroundColor: Colors.blueAccent,
+        child: const Icon(Icons.add),
       ),
     );
   }

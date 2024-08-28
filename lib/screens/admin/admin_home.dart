@@ -31,6 +31,9 @@ class _AdminHomeScreenState extends State<AdminHomeScreen> {
     return Scaffold(
       appBar: AppBar(
         title: const Text('Admin Dashboard'),
+        centerTitle: true,
+        backgroundColor: Colors.blueAccent,
+        elevation: 4,
       ),
       body: Center(
         child: _widgetOptions.elementAt(_selectedIndex),
@@ -51,8 +54,19 @@ class _AdminHomeScreenState extends State<AdminHomeScreen> {
           ),
         ],
         currentIndex: _selectedIndex,
-        selectedItemColor: Colors.blue,
+        selectedItemColor: Colors.blueAccent,
+        unselectedItemColor: Colors.grey,
+        selectedLabelStyle: const TextStyle(fontWeight: FontWeight.bold),
+        unselectedLabelStyle: const TextStyle(color: Colors.black54),
         onTap: _onItemTapped,
+        elevation: 8,
+      ),
+      floatingActionButton: FloatingActionButton(
+        onPressed: () {
+          // Add any action if needed
+        },
+        backgroundColor: Colors.blueAccent,
+        child: const Icon(Icons.add),
       ),
     );
   }
