@@ -1,8 +1,21 @@
+import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 
-class StudentTimetableScreen extends StatelessWidget {
+class StudentTimetableScreen extends StatefulWidget {
   const StudentTimetableScreen({super.key});
+
+  @override
+  State<StudentTimetableScreen> createState() => _StudentTimetableScreenState();
+}
+
+class _StudentTimetableScreenState extends State<StudentTimetableScreen> {
+   @override
+  void initState() {
+    super.initState();
+    // Subscribe to the topic
+    FirebaseMessaging.instance.subscribeToTopic('timetable_updates');
+  }
 
   @override
   Widget build(BuildContext context) {

@@ -21,22 +21,24 @@ class _AddTimetableEntryScreenState extends State<AddTimetableEntryScreen> {
     String time = _timeController.text.trim();
     String venue = _venueController.text.trim();
 
-    if (course.isEmpty || date.isEmpty || time.isEmpty || venue.isEmpty) {
-      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
-        content: Text('Please fill in all fields.'),
-      ));
-      return;
+    if (course.isNotEmpty &&
+        date.isNotEmpty &&
+        time.isNotEmpty &&
+        venue.isNotEmpty) {
+      await FirebaseFirestore.instance.collection('timetables').add({
+        'course': course,
+        'date': date,
+        'time': time,
+        'venue': venue,
+      });
+
+      Navigator.pop(context);
+    } else {
+      // Show a message if any field is empty
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Please fill all fields')),
+      );
     }
-
-    // Add the entry to Firestore
-    await FirebaseFirestore.instance.collection('timetables').add({
-      'course': course,
-      'date': date,
-      'time': time,
-      'venue': venue,
-    });
-
-    Navigator.pop(context); // Go back to the previous screen
   }
 
   @override
@@ -44,7 +46,7 @@ class _AddTimetableEntryScreenState extends State<AddTimetableEntryScreen> {
     return Scaffold(
       appBar: AppBar(
         title: const Text('Add Timetable Entry'),
-        backgroundColor: Colors.blueAccent, // AppBar color
+        backgroundColor: Colors.blueAccent,
       ),
       body: Padding(
         padding: const EdgeInsets.all(16.0),
@@ -63,16 +65,13 @@ class _AddTimetableEntryScreenState extends State<AddTimetableEntryScreen> {
               ElevatedButton(
                 onPressed: _addEntry,
                 style: ElevatedButton.styleFrom(
-                  backgroundColor: Colors.blueAccent, // Button color
+                  backgroundColor: Colors.blueAccent,
                   padding: const EdgeInsets.symmetric(vertical: 16.0),
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(8.0),
                   ),
                 ),
-                child: const Text(
-                  'Add Entry',
-                  style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
-                ),
+                child: const Text('Add Entry', style: TextStyle(fontSize: 16)),
               ),
             ],
           ),
@@ -86,14 +85,15 @@ class _AddTimetableEntryScreenState extends State<AddTimetableEntryScreen> {
       controller: controller,
       decoration: InputDecoration(
         labelText: label,
+        labelStyle: const TextStyle(color: Colors.grey),
         border: OutlineInputBorder(
           borderRadius: BorderRadius.circular(8.0),
+          borderSide: const BorderSide(color: Colors.blueAccent),
         ),
         focusedBorder: OutlineInputBorder(
-          borderSide: const BorderSide(color: Colors.blueAccent, width: 2.0),
           borderRadius: BorderRadius.circular(8.0),
+          borderSide: const BorderSide(color: Colors.blueAccent, width: 2.0),
         ),
-        labelStyle: const TextStyle(color: Colors.grey),
       ),
     );
   }

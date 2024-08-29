@@ -1,93 +1,85 @@
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 
+import 'edit_timetable_entry_screen.dart';
 class AdminTimetableScreen extends StatelessWidget {
   const AdminTimetableScreen({super.key});
+
+  void _deleteTimetableEntry(String docId) {
+    FirebaseFirestore.instance.collection('timetables').doc(docId).delete();
+  }
+
+  void _editTimetableEntry(BuildContext context, DocumentSnapshot document) {
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) => EditTimetableEntryScreen(document: document),
+      ),
+    );
+  }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Timetable Management'),
+        title: const Text('Manage Timetable'),
         centerTitle: true,
         backgroundColor: Colors.blueAccent,
       ),
-      body: StreamBuilder<QuerySnapshot>(
-        stream: FirebaseFirestore.instance.collection('timetable').snapshots(),
-        builder: (context, snapshot) {
+      body: StreamBuilder(
+        stream: FirebaseFirestore.instance.collection('timetables').snapshots(),
+        builder: (context, AsyncSnapshot<QuerySnapshot> snapshot) {
           if (!snapshot.hasData) {
             return const Center(child: CircularProgressIndicator());
           }
 
-          if (snapshot.data!.docs.isEmpty) {
-            return const Center(child: Text('No timetable entries found.'));
+          final timetables = snapshot.data!.docs;
+
+          if (timetables.isEmpty) {
+            return const Center(child: Text('No timetable available'));
           }
 
-          return ListView(
-            padding: const EdgeInsets.all(16.0),
-            children: snapshot.data!.docs.map((doc) {
+          return ListView.builder(
+            padding: const EdgeInsets.all(16.0), // Added padding for the ListView
+            itemCount: timetables.length,
+            itemBuilder: (context, index) {
+              final timetable = timetables[index];
               return Card(
-                margin: const EdgeInsets.symmetric(vertical: 8.0),
-                elevation: 4,
+                margin: const EdgeInsets.symmetric(vertical: 8.0), // Vertical margin for spacing
+                elevation: 4, // Add elevation for a lifted effect
                 child: ListTile(
+                  contentPadding: const EdgeInsets.all(16.0), // Padding inside the ListTile
                   title: Text(
-                    doc['course'],
-                    style: const TextStyle(fontWeight: FontWeight.bold),
+                    timetable['course'],
+                    style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 18),
                   ),
-                  subtitle: Text(
-                    'Date: ${doc['date']}\nTime: ${doc['time']}\nVenue: ${doc['venue']}',
-                    style: const TextStyle(color: Colors.grey),
+                  subtitle: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      const SizedBox(height: 4), // Space between title and subtitle
+                      Text('Date: ${timetable['date']}'),
+                      Text('Time: ${timetable['time']}'),
+                      Text('Venue: ${timetable['venue']}'),
+                    ],
                   ),
-                  trailing: IconButton(
-                    icon: const Icon(Icons.edit, color: Colors.blue),
-                    onPressed: () {
-                      // Navigate to edit screen with doc.id
-                    },
+                  trailing: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      IconButton(
+                        icon: const Icon(Icons.edit, color: Colors.blueAccent),
+                        onPressed: () => _editTimetableEntry(context, timetable),
+                      ),
+                      IconButton(
+                        icon: const Icon(Icons.delete, color: Colors.redAccent),
+                        onPressed: () => _deleteTimetableEntry(timetable.id),
+                      ),
+                    ],
                   ),
-                  onLongPress: () {
-                    _deleteTimetableEntry(context, doc.id);
-                  },
                 ),
               );
-            }).toList(),
+            },
           );
         },
-      ),
-      floatingActionButton: FloatingActionButton(
-        backgroundColor: Colors.blueAccent,
-        child: const Icon(Icons.add),
-        onPressed: () {
-          // Navigate to a screen for adding a new timetable entry
-        },
-      ),
-    );
-  }
-
-  void _deleteTimetableEntry(BuildContext context, String id) {
-    showDialog(
-      context: context,
-      builder: (context) => AlertDialog(
-        title: const Text('Delete Entry'),
-        content: const Text('Are you sure you want to delete this entry?'),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context),
-            child: const Text('Cancel'),
-          ),
-          TextButton(
-            onPressed: () {
-              FirebaseFirestore.instance
-                  .collection('timetable')
-                  .doc(id)
-                  .delete();
-              Navigator.pop(context);
-              ScaffoldMessenger.of(context).showSnackBar(
-                const SnackBar(content: Text('Entry deleted successfully.')),
-              );
-            },
-            child: const Text('Delete', style: TextStyle(color: Colors.red)),
-          ),
-        ],
       ),
     );
   }

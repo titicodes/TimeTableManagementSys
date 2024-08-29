@@ -1,9 +1,11 @@
 import 'package:flutter/material.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:timetable_management_system/screens/profile_screen.dart';
 import 'view_timetable_screen.dart';
+import 'package:timetable_management_system/screens/login_screen.dart';
 
 class LecturerHomeScreen extends StatefulWidget {
-  const LecturerHomeScreen({super.key});
+  const LecturerHomeScreen({Key? key}) : super(key: key);
 
   @override
   _LecturerHomeScreenState createState() => _LecturerHomeScreenState();
@@ -13,14 +15,23 @@ class _LecturerHomeScreenState extends State<LecturerHomeScreen> {
   int _selectedIndex = 0;
 
   static const List<Widget> _widgetOptions = <Widget>[
-    LecturerTimetableScreen(),
-    ProfileScreen(),
+    LecturerTimetableScreen(), // Timetable management screen
+    ProfileScreen(), // Profile management screen
   ];
 
   void _onItemTapped(int index) {
     setState(() {
       _selectedIndex = index;
     });
+  }
+
+  void _logout() async {
+    await FirebaseAuth.instance.signOut();
+    Navigator.pushAndRemoveUntil(
+      context,
+      MaterialPageRoute(builder: (context) => const LoginScreen()),
+      (route) => false,
+    );
   }
 
   @override
@@ -31,6 +42,13 @@ class _LecturerHomeScreenState extends State<LecturerHomeScreen> {
         centerTitle: true,
         backgroundColor: Colors.blueAccent,
         elevation: 4,
+        actions: [
+          IconButton(
+            icon: const Icon(Icons.logout),
+            onPressed: _logout,
+            tooltip: 'Logout',
+          ),
+        ],
       ),
       body: Center(
         child: _widgetOptions.elementAt(_selectedIndex),
@@ -56,7 +74,7 @@ class _LecturerHomeScreenState extends State<LecturerHomeScreen> {
       ),
       floatingActionButton: FloatingActionButton(
         onPressed: () {
-          // Action for the floating button if needed
+          // Add any action if needed
         },
         backgroundColor: Colors.blueAccent,
         child: const Icon(Icons.add),
