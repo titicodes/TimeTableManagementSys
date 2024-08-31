@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:timetable_management_system/screens/profile_screen.dart';
+import 'lecturer_request_status.dart';
 import 'view_timetable_screen.dart';
 import 'package:timetable_management_system/screens/login_screen.dart';
 
@@ -16,7 +17,9 @@ class _LecturerHomeScreenState extends State<LecturerHomeScreen> {
 
   static const List<Widget> _widgetOptions = <Widget>[
     LecturerTimetableScreen(), // Timetable management screen
-    ProfileScreen(), // Profile management screen
+    LecturerRequestStatusScreen(),
+    ProfileScreen(),
+    // Profile management screen
   ];
 
   void _onItemTapped(int index) {
@@ -38,10 +41,11 @@ class _LecturerHomeScreenState extends State<LecturerHomeScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Lecturer Dashboard'),
+        //title: const Text('Lecturer Dashboard'),
         centerTitle: true,
-        backgroundColor: Colors.blueAccent,
+        //backgroundColor: Colors.blueAccent,
         elevation: 4,
+        automaticallyImplyLeading: false, // Remove leading icon
         actions: [
           IconButton(
             icon: const Icon(Icons.logout),
@@ -58,6 +62,10 @@ class _LecturerHomeScreenState extends State<LecturerHomeScreen> {
           BottomNavigationBarItem(
             icon: Icon(Icons.schedule),
             label: 'Timetable',
+          ),
+          BottomNavigationBarItem(
+            icon: Icon(Icons.person),
+            label: 'Request Edit',
           ),
           BottomNavigationBarItem(
             icon: Icon(Icons.person),

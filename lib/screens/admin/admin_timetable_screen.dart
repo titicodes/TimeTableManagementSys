@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 
 import 'edit_timetable_entry_screen.dart';
+
 class AdminTimetableScreen extends StatelessWidget {
   const AdminTimetableScreen({super.key});
 
@@ -22,9 +23,13 @@ class AdminTimetableScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Manage Timetable'),
+        title: const Text(
+          'Manage Timetable',
+          style: TextStyle(
+              fontSize: 18, fontWeight: FontWeight.w600, color: Colors.black),
+        ),
         centerTitle: true,
-        backgroundColor: Colors.blueAccent,
+        // backgroundColor: Colors.blueAccent,
       ),
       body: StreamBuilder(
         stream: FirebaseFirestore.instance.collection('timetables').snapshots(),
@@ -39,45 +44,46 @@ class AdminTimetableScreen extends StatelessWidget {
             return const Center(child: Text('No timetable available'));
           }
 
-          return ListView.builder(
-            padding: const EdgeInsets.all(16.0), // Added padding for the ListView
-            itemCount: timetables.length,
-            itemBuilder: (context, index) {
-              final timetable = timetables[index];
-              return Card(
-                margin: const EdgeInsets.symmetric(vertical: 8.0), // Vertical margin for spacing
-                elevation: 4, // Add elevation for a lifted effect
-                child: ListTile(
-                  contentPadding: const EdgeInsets.all(16.0), // Padding inside the ListTile
-                  title: Text(
-                    timetable['course'],
-                    style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 18),
+          return SingleChildScrollView(
+            scrollDirection: Axis.horizontal, // Enable horizontal scrolling
+            child: DataTable(
+              columns: const [
+                DataColumn(label: Text('Course Code')),
+                DataColumn(label: Text('Day')),
+                DataColumn(label: Text('From')),
+                DataColumn(label: Text('To')),
+                DataColumn(label: Text('Venue')),
+                DataColumn(label: Text('Lecturer')),
+                DataColumn(label: Text('Actions')),
+              ],
+              rows: timetables.map((timetable) {
+                return DataRow(cells: [
+                  DataCell(Text(timetable['courseCode'] ?? 'N/A')),
+                  DataCell(Text(timetable['day'] ?? 'N/A')),
+                  DataCell(Text(timetable['timeFrom'] ?? 'N/A')),
+                  DataCell(Text(timetable['timeTo'] ?? 'N/A')),
+                  DataCell(Text(timetable['venue'] ?? 'N/A')),
+                  DataCell(Text(timetable['lecturer'] ?? 'N/A')),
+                  DataCell(
+                    Row(
+                      children: [
+                        IconButton(
+                          icon:
+                              const Icon(Icons.edit, color: Colors.blueAccent),
+                          onPressed: () =>
+                              _editTimetableEntry(context, timetable),
+                        ),
+                        IconButton(
+                          icon:
+                              const Icon(Icons.delete, color: Colors.redAccent),
+                          onPressed: () => _deleteTimetableEntry(timetable.id),
+                        ),
+                      ],
+                    ),
                   ),
-                  subtitle: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      const SizedBox(height: 4), // Space between title and subtitle
-                      Text('Date: ${timetable['date']}'),
-                      Text('Time: ${timetable['time']}'),
-                      Text('Venue: ${timetable['venue']}'),
-                    ],
-                  ),
-                  trailing: Row(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      IconButton(
-                        icon: const Icon(Icons.edit, color: Colors.blueAccent),
-                        onPressed: () => _editTimetableEntry(context, timetable),
-                      ),
-                      IconButton(
-                        icon: const Icon(Icons.delete, color: Colors.redAccent),
-                        onPressed: () => _deleteTimetableEntry(timetable.id),
-                      ),
-                    ],
-                  ),
-                ),
-              );
-            },
+                ]);
+              }).toList(),
+            ),
           );
         },
       ),

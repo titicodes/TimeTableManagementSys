@@ -37,7 +37,7 @@ class _AdminManageUsersScreenState extends State<AdminManageUsersScreen> {
       if (user != null) {
         await FirebaseFirestore.instance.collection('users').doc(user.uid).set({
           'email': _emailController.text.trim(),
-          'name': _nameController.text.trim(),
+          'fullName': _nameController.text.trim(),
           'dob': _dobController.text.trim(),
           'role': _selectedRole,
         });
@@ -87,87 +87,111 @@ class _AdminManageUsersScreenState extends State<AdminManageUsersScreen> {
     return Scaffold(
       appBar: AppBar(
         title: const Text('Manage Users'),
+        backgroundColor: Colors.blueAccent,
       ),
       body: SingleChildScrollView(
         child: Padding(
           padding: const EdgeInsets.all(16.0),
           child: Column(
             children: [
-              TextField(
-                controller: _emailController,
-                decoration: const InputDecoration(
-                    labelText: 'Email', border: OutlineInputBorder()),
-              ),
-              const SizedBox(height: 16.0), // Added space
-              TextField(
-                controller: _passwordController,
-                decoration: const InputDecoration(
-                    labelText: 'Password', border: OutlineInputBorder()),
-                obscureText: true,
-              ),
-              const SizedBox(height: 16.0), // Added space
-              TextField(
-                controller: _nameController,
-                decoration: const InputDecoration(
-                    labelText: 'Name', border: OutlineInputBorder()),
-              ),
-              const SizedBox(height: 16.0), // Added space
-              TextField(
-                controller: _dobController,
-                decoration: const InputDecoration(
-                    labelText: 'Date of Birth (YYYY-MM-DD)',
-                    border: OutlineInputBorder()),
-              ),
-              const SizedBox(height: 16.0), // Added space
-              DropdownButton<String>(
-                value: _selectedRole,
-                items: const [
-                  DropdownMenuItem(value: 'lecturer', child: Text('Lecturer')),
-                  DropdownMenuItem(value: 'student', child: Text('Student')),
-                ],
-                onChanged: (value) {
-                  setState(() {
-                    _selectedRole = value!;
-                  });
-                },
-              ),
-              const SizedBox(height: 20), // Added space before button
-              ElevatedButton(
-                onPressed: _createUser,
-                child: const Text('Create User'),
-              ),
-              const SizedBox(height: 30), // Added space before user list
+              _buildTextField(_emailController, 'Email'),
+              _buildTextField(_passwordController, 'Password',
+                  obscureText: true),
+              _buildTextField(_nameController, 'Name'),
+              _buildTextField(_dobController, 'Date of Birth (YYYY-MM-DD)'),
+              const SizedBox(height: 16.0),
+              _buildRoleDropdown(),
+              const SizedBox(height: 20), // Space before button
+              _buildCreateUserButton(),
+              const SizedBox(height: 30), // Space before user list
               _isLoading
                   ? const CircularProgressIndicator()
                   : _users.isEmpty
                       ? const Text('No users found')
-                      : ListView.builder(
-                          shrinkWrap: true,
-                          physics: const NeverScrollableScrollPhysics(),
-                          itemCount: _users.length,
-                          itemBuilder: (context, index) {
-                            var user = _users[index];
-                            return ListTile(
-                              leading: CircleAvatar(
-                                child: Text(user['email'][0].toUpperCase()),
-                              ),
-                              title: Text(user['name'] ?? 'N/A'),
-                              subtitle: Text(
-                                  'Email: ${user['email'] ?? 'N/A'}\nRole: ${user['role'] ?? 'N/A'}\nDOB: ${user['dob'] ?? 'N/A'}'),
-                              trailing: IconButton(
-                                icon:
-                                    const Icon(Icons.delete, color: Colors.red),
-                                onPressed: () {
-                                  _showDeleteConfirmationDialog(user.id);
-                                },
-                              ),
-                            );
-                          },
-                        ),
+                      : _buildUserList(),
             ],
           ),
         ),
       ),
+    );
+  }
+
+  Widget _buildTextField(TextEditingController controller, String label,
+      {bool obscureText = false}) {
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 16.0),
+      child: TextField(
+        controller: controller,
+        decoration: InputDecoration(
+          labelText: label,
+          border: const OutlineInputBorder(),
+          filled: true,
+          fillColor: Colors.grey[200],
+        ),
+        obscureText: obscureText,
+      ),
+    );
+  }
+
+  Widget _buildRoleDropdown() {
+    return DropdownButtonFormField<String>(
+      value: _selectedRole,
+      decoration: InputDecoration(
+        labelText: 'Select Role',
+        border: const OutlineInputBorder(),
+        filled: true,
+        fillColor: Colors.grey[200],
+      ),
+      items: const [
+        DropdownMenuItem(value: 'lecturer', child: Text('Lecturer')),
+        DropdownMenuItem(value: 'student', child: Text('Student')),
+      ],
+      onChanged: (value) {
+        setState(() {
+          _selectedRole = value!;
+        });
+      },
+      isExpanded: true, // Makes dropdown full width
+    );
+  }
+
+  Widget _buildCreateUserButton() {
+    return ElevatedButton(
+      onPressed: _createUser,
+      style: ElevatedButton.styleFrom(
+        padding: const EdgeInsets.symmetric(vertical: 12.0),
+        minimumSize: const Size(double.infinity, 50), // Full width
+        backgroundColor: Colors.blueAccent,
+      ),
+      child: const Text('Create User'),
+    );
+  }
+
+  Widget _buildUserList() {
+    return ListView.builder(
+      shrinkWrap: true,
+      physics: const NeverScrollableScrollPhysics(),
+      itemCount: _users.length,
+      itemBuilder: (context, index) {
+        var user = _users[index];
+        return ListTile(
+          leading: CircleAvatar(
+            child: Text(user['email'][0].toUpperCase()),
+          ),
+          title: Text(user['fullName'] ?? 'N/A'), // Corrected field name
+          subtitle: Text(
+            'Email: ${user['email'] ?? 'N/A'}\n'
+            'Role: ${user['role'] ?? 'N/A'}\n'
+            'DOB: ${user['dob'] ?? 'N/A'}',
+          ),
+          trailing: IconButton(
+            icon: const Icon(Icons.delete, color: Colors.red),
+            onPressed: () {
+              _showDeleteConfirmationDialog(user.id);
+            },
+          ),
+        );
+      },
     );
   }
 

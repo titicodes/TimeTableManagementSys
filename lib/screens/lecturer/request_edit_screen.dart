@@ -1,7 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 
 class RequestEditScreen extends StatefulWidget {
+  final String timetableId; // To track the timetable being requested for edit
+
+  const RequestEditScreen({Key? key, required this.timetableId})
+      : super(key: key);
+
   @override
   _RequestEditScreenState createState() => _RequestEditScreenState();
 }
@@ -23,9 +29,11 @@ class _RequestEditScreenState extends State<RequestEditScreen> {
 
     // Submit the request to Firestore (to be handled by Admin)
     await FirebaseFirestore.instance.collection('edit_requests').add({
+      'timetableId': widget.timetableId, // Track the timetable ID
       'course': course,
       'reason': reason,
       'status': 'pending',
+      'lecturerId': FirebaseAuth.instance.currentUser!.uid,
       'timestamp': FieldValue.serverTimestamp(),
     });
 
@@ -79,7 +87,7 @@ class _RequestEditScreenState extends State<RequestEditScreen> {
                       filled: true,
                       fillColor: Colors.grey[200],
                     ),
-                    maxLines: 3, // Allow multiple lines for the reason
+                    maxLines: 3,
                   ),
                   const SizedBox(height: 20),
                   ElevatedButton(

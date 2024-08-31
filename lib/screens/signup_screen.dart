@@ -35,12 +35,37 @@ class _SignupScreenState extends State<SignupScreen> {
   }
 
   void _signup() async {
+    if (_fullNameController.text.trim().isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Please enter your full name')),
+      );
+      return;
+    }
+    if (_selectedDob == null) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Please select your date of birth')),
+      );
+      return;
+    }
+    if (_emailController.text.trim().isEmpty ||
+        !_emailController.text.contains('@')) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Please enter a valid email address')),
+      );
+      return;
+    }
+    if (_passwordController.text.trim().length < 6) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Password must be at least 6 characters')),
+      );
+      return;
+    }
+
     setState(() {
       _isLoading = true;
     });
 
     try {
-      // Create user in Firebase Authentication
       UserCredential userCredential =
           await _auth.createUserWithEmailAndPassword(
         email: _emailController.text.trim(),
@@ -50,7 +75,6 @@ class _SignupScreenState extends State<SignupScreen> {
       User? user = userCredential.user;
 
       if (user != null) {
-        // Store the user's details in Firestore
         await FirebaseFirestore.instance.collection('users').doc(user.uid).set({
           'email': _emailController.text.trim(),
           'fullName': _fullNameController.text.trim(),
@@ -60,18 +84,23 @@ class _SignupScreenState extends State<SignupScreen> {
           'role': _selectedRole,
         });
 
-        // Show a success message
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(content: Text('Signup successful! Please log in.')),
         );
 
-        // Navigate to the login screen
         Navigator.pushReplacementNamed(context, '/login');
       }
     } catch (e) {
-      // Show error message to the user
+      String errorMessage = 'Failed to sign up';
+      if (e is FirebaseAuthException) {
+        if (e.code == 'email-already-in-use') {
+          errorMessage = 'This email address is already in use.';
+        } else if (e.code == 'weak-password') {
+          errorMessage = 'The password provided is too weak.';
+        }
+      }
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Failed to sign up: ${e.toString()}')),
+        SnackBar(content: Text(errorMessage)),
       );
     } finally {
       setState(() {
@@ -83,7 +112,10 @@ class _SignupScreenState extends State<SignupScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text('Signup')),
+      appBar: AppBar(
+        title: const Text('Signup'),
+        backgroundColor: Colors.blueAccent,
+      ),
       body: Padding(
         padding: const EdgeInsets.all(16.0),
         child: SingleChildScrollView(
@@ -92,9 +124,11 @@ class _SignupScreenState extends State<SignupScreen> {
             children: [
               TextField(
                 controller: _fullNameController,
-                decoration: const InputDecoration(
+                decoration: InputDecoration(
                   labelText: 'Full Name',
-                  border: OutlineInputBorder(),
+                  border: const OutlineInputBorder(),
+                  filled: true,
+                  fillColor: Colors.grey[200],
                 ),
               ),
               const SizedBox(height: 10),
@@ -103,37 +137,50 @@ class _SignupScreenState extends State<SignupScreen> {
                 child: InputDecorator(
                   decoration: InputDecoration(
                     labelText: 'Date of Birth',
-                    border: OutlineInputBorder(),
+                    border: const OutlineInputBorder(),
+                    filled: true,
+                    fillColor: Colors.grey[200],
                     suffixIcon: const Icon(Icons.calendar_today),
                   ),
                   child: Text(
                     _selectedDob == null
                         ? 'Select Date of Birth'
                         : DateFormat('yyyy-MM-dd').format(_selectedDob!),
+                    style: const TextStyle(color: Colors.black54),
                   ),
                 ),
               ),
               const SizedBox(height: 10),
               TextField(
                 controller: _emailController,
-                decoration: const InputDecoration(
+                decoration: InputDecoration(
                   labelText: 'Email',
-                  border: OutlineInputBorder(),
+                  border: const OutlineInputBorder(),
+                  filled: true,
+                  fillColor: Colors.grey[200],
                 ),
                 keyboardType: TextInputType.emailAddress,
               ),
               const SizedBox(height: 10),
               TextField(
                 controller: _passwordController,
-                decoration: const InputDecoration(
+                decoration: InputDecoration(
                   labelText: 'Password',
-                  border: OutlineInputBorder(),
+                  border: const OutlineInputBorder(),
+                  filled: true,
+                  fillColor: Colors.grey[200],
                 ),
                 obscureText: true,
               ),
               const SizedBox(height: 20),
-              DropdownButton<String>(
+              DropdownButtonFormField<String>(
                 value: _selectedRole,
+                decoration: InputDecoration(
+                  labelText: 'Select Role',
+                  border: const OutlineInputBorder(),
+                  filled: true,
+                  fillColor: Colors.grey[200],
+                ),
                 items: const [
                   DropdownMenuItem(value: 'admin', child: Text('Admin')),
                   DropdownMenuItem(value: 'lecturer', child: Text('Lecturer')),
@@ -144,13 +191,24 @@ class _SignupScreenState extends State<SignupScreen> {
                     _selectedRole = value!;
                   });
                 },
+                isExpanded: true, // Make dropdown full width
               ),
               const SizedBox(height: 20),
               _isLoading
                   ? const CircularProgressIndicator()
                   : ElevatedButton(
                       onPressed: _signup,
-                      child: const Text('Signup'),
+                      style: ElevatedButton.styleFrom(
+                        padding: const EdgeInsets.symmetric(vertical: 12.0),
+                        backgroundColor: Colors.blueAccent,
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(8.0),
+                        ),
+                        minimumSize:
+                            const Size(double.infinity, 50), // Full width
+                      ),
+                      child:
+                          const Text('Signup', style: TextStyle(fontSize: 16)),
                     ),
               const SizedBox(height: 20),
               Row(
@@ -161,7 +219,8 @@ class _SignupScreenState extends State<SignupScreen> {
                     onPressed: () {
                       Navigator.pushReplacementNamed(context, '/login');
                     },
-                    child: const Text('Login'),
+                    child: const Text('Login',
+                        style: TextStyle(color: Colors.blueAccent)),
                   ),
                 ],
               ),

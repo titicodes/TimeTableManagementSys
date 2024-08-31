@@ -33,7 +33,6 @@ class _ProfileScreenState extends State<ProfileScreen> {
           isLoading = false;
         });
       } else {
-        // Handle the case where the user data doesn't exist
         setState(() {
           isLoading = false;
         });
@@ -56,7 +55,6 @@ class _ProfileScreenState extends State<ProfileScreen> {
         builder: (context) => EditProfileScreen(userData: userData),
       ),
     ).then((_) {
-      // Refresh the profile data after editing
       fetchUserData();
     });
   }
@@ -65,78 +63,78 @@ class _ProfileScreenState extends State<ProfileScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Profile'),
+        title: const Text(
+          'Profile Details',
+          style: TextStyle(
+              color: Colors.black, fontSize: 20, fontWeight: FontWeight.w600),
+        ),
         centerTitle: true,
-        backgroundColor: Colors.blueAccent,
+        // backgroundColor: Colors.blueAccent,
       ),
       body: isLoading
           ? const Center(child: CircularProgressIndicator())
           : Padding(
-              padding: const EdgeInsets.all(16.0),
-              child: Card(
-                elevation: 5,
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(12.0),
-                ),
-                child: Padding(
-                  padding: const EdgeInsets.all(16.0),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        'Full Name: ${userData?['fullName'] ?? 'N/A'}',
-                        style: const TextStyle(
-                            fontSize: 18, fontWeight: FontWeight.bold),
+              padding: const EdgeInsets.all(20.0),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                children: [
+                  _buildProfileDetailRow(
+                      'Full Name:', userData?['fullName'] ?? 'N/A'),
+                  _buildProfileDetailRow('Email:', userData?['email'] ?? 'N/A'),
+                  _buildProfileDetailRow('Role:', userData?['role'] ?? 'N/A'),
+                  _buildProfileDetailRow(
+                      'Date of Birth:', userData?['dob'] ?? 'N/A'),
+                  const SizedBox(height: 20),
+                  ElevatedButton(
+                    onPressed: _editProfile,
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: Colors.green,
+                      padding: const EdgeInsets.symmetric(vertical: 14.0),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(10.0),
                       ),
-                      const SizedBox(height: 10),
-                      Text(
-                        'Email: ${userData?['email'] ?? 'N/A'}',
-                        style: const TextStyle(
-                            fontSize: 18, fontWeight: FontWeight.bold),
-                      ),
-                      const SizedBox(height: 10),
-                      Text(
-                        'Role: ${userData?['role'] ?? 'N/A'}',
-                        style: const TextStyle(
-                            fontSize: 18, fontWeight: FontWeight.bold),
-                      ),
-                      const SizedBox(height: 10),
-                      Text(
-                        'Date of Birth: ${userData?['dob'] ?? 'N/A'}',
-                        style: const TextStyle(
-                            fontSize: 18, fontWeight: FontWeight.bold),
-                      ),
-                      const SizedBox(height: 20),
-                      ElevatedButton(
-                        onPressed: _editProfile,
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: Colors.greenAccent,
-                          padding: const EdgeInsets.symmetric(vertical: 12.0),
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(8.0),
-                          ),
-                        ),
-                        child: const Text('Edit Profile',
-                            style: TextStyle(fontSize: 16)),
-                      ),
-                      const SizedBox(height: 10),
-                      ElevatedButton(
-                        onPressed: _logout,
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: Colors.redAccent,
-                          padding: const EdgeInsets.symmetric(vertical: 12.0),
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(8.0),
-                          ),
-                        ),
-                        child: const Text('Logout',
-                            style: TextStyle(fontSize: 16)),
-                      ),
-                    ],
+                    ),
+                    child: const Text('Edit Profile',
+                        style: TextStyle(fontSize: 18)),
                   ),
-                ),
+                  const SizedBox(height: 10),
+                  Align(
+                    alignment: Alignment.centerRight,
+                    child: ElevatedButton(
+                      onPressed: _logout,
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: Colors.red,
+                        padding: const EdgeInsets.symmetric(vertical: 14.0),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(10.0),
+                        ),
+                      ),
+                      child:
+                          const Text('Logout', style: TextStyle(fontSize: 14)),
+                    ),
+                  ),
+                ],
               ),
             ),
+    );
+  }
+
+  Widget _buildProfileDetailRow(String label, String value) {
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+      children: [
+        Text(
+          label,
+          style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+        ),
+        Expanded(
+          child: Text(
+            value,
+            textAlign: TextAlign.end,
+            style: const TextStyle(fontSize: 18),
+          ),
+        ),
+      ],
     );
   }
 }
@@ -179,7 +177,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
           const SnackBar(content: Text('Profile updated successfully')),
         );
 
-        Navigator.pop(context); // Go back to profile screen
+        Navigator.pop(context);
       }
     }
   }
@@ -192,14 +190,19 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
         backgroundColor: Colors.blueAccent,
       ),
       body: Padding(
-        padding: const EdgeInsets.all(16.0),
+        padding: const EdgeInsets.all(20.0),
         child: Form(
           key: _formKey,
           child: Column(
             children: [
               TextFormField(
                 controller: _fullNameController,
-                decoration: const InputDecoration(labelText: 'Full Name'),
+                decoration: InputDecoration(
+                  labelText: 'Full Name',
+                  border: const OutlineInputBorder(),
+                  filled: true,
+                  fillColor: Colors.grey[200],
+                ),
                 validator: (value) {
                   if (value == null || value.isEmpty) {
                     return 'Please enter your full name';
@@ -207,9 +210,15 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
                   return null;
                 },
               ),
+              const SizedBox(height: 20),
               TextFormField(
                 controller: _dobController,
-                decoration: const InputDecoration(labelText: 'Date of Birth'),
+                decoration: InputDecoration(
+                  labelText: 'Date of Birth',
+                  border: const OutlineInputBorder(),
+                  filled: true,
+                  fillColor: Colors.grey[200],
+                ),
                 validator: (value) {
                   if (value == null || value.isEmpty) {
                     return 'Please enter your date of birth';
@@ -222,13 +231,13 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
                 onPressed: _saveProfile,
                 style: ElevatedButton.styleFrom(
                   backgroundColor: Colors.blueAccent,
-                  padding: const EdgeInsets.symmetric(vertical: 12.0),
+                  padding: const EdgeInsets.symmetric(vertical: 14.0),
                   shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(8.0),
+                    borderRadius: BorderRadius.circular(10.0),
                   ),
                 ),
                 child:
-                    const Text('Save Changes', style: TextStyle(fontSize: 16)),
+                    const Text('Save Changes', style: TextStyle(fontSize: 18)),
               ),
             ],
           ),

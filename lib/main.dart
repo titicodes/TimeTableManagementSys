@@ -10,8 +10,10 @@ import 'package:timetable_management_system/screens/login_screen.dart';
 import 'package:timetable_management_system/screens/signup_screen.dart';
 import 'package:timetable_management_system/screens/scan_qr_code_screen.dart';
 import 'package:timetable_management_system/screens/generate_qr_code_screen.dart';
+import 'screens/admin/admin_manage_request_screen.dart';
 import 'screens/admin/admin_manage_users.dart';
 import 'screens/lecturer/lecturer_home.dart';
+import 'screens/lecturer/lecturer_request_status.dart';
 import 'screens/students/student_home.dart';
 
 Future<void> _firebaseMessagingBackgroundHandler(RemoteMessage message) async {
@@ -67,6 +69,7 @@ class MyApp extends StatelessWidget {
       theme: ThemeData(
         primarySwatch: Colors.blue,
       ),
+      debugShowCheckedModeBanner: false,
       home:
           const AuthChecker(), // Check user authentication status // Default route on startup
       routes: {
@@ -77,7 +80,10 @@ class MyApp extends StatelessWidget {
         '/studentHome': (context) => const StudentHomeScreen(),
         '/scanQRCode': (context) => const ScanQRCodeScreen(),
         '/generateQRCode': (context) => const GenerateQRCodeScreen(),
-        '/adminManageUsers': (context) => const AdminManageUsersScreen(),
+        //'/adminManageUsers': (context) => const AdminManageUsersScreen(),
+        //'/adminManageRequests': (context) => const AdminManageRequestsScreen(),
+        '/lecturerRequestStatus': (context) =>
+            const LecturerRequestStatusScreen(),
         // Add more routes as needed
       },
     );

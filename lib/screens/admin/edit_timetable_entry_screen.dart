@@ -1,7 +1,5 @@
-import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 
 class EditTimetableEntryScreen extends StatefulWidget {
   final DocumentSnapshot document;
@@ -15,88 +13,44 @@ class EditTimetableEntryScreen extends StatefulWidget {
 
 class _EditTimetableEntryScreenState extends State<EditTimetableEntryScreen> {
   late TextEditingController _courseController;
-  late TextEditingController _dateController;
-  late TextEditingController _timeController;
+  late TextEditingController _dayController;
+  late TextEditingController _timeFromController;
+  late TextEditingController _timeToController;
   late TextEditingController _venueController;
-  FlutterLocalNotificationsPlugin? flutterLocalNotificationsPlugin;
+  late TextEditingController _lecturerController;
 
   @override
   void initState() {
     super.initState();
-    _courseController = TextEditingController(text: widget.document['course']);
-    _dateController = TextEditingController(text: widget.document['date']);
-    _timeController = TextEditingController(text: widget.document['time']);
+    _courseController =
+        TextEditingController(text: widget.document['courseCode']);
+    _dayController = TextEditingController(text: widget.document['day']);
+    _timeFromController =
+        TextEditingController(text: widget.document['timeFrom']);
+    _timeToController = TextEditingController(text: widget.document['timeTo']);
     _venueController = TextEditingController(text: widget.document['venue']);
-    
-    if (!kIsWeb) {
-      // Initialize the local notifications plugin only on mobile platforms
-      flutterLocalNotificationsPlugin = FlutterLocalNotificationsPlugin();
-      const AndroidInitializationSettings initializationSettingsAndroid =
-          AndroidInitializationSettings('@mipmap/ic_launcher');
-      const InitializationSettings initializationSettings =
-          InitializationSettings(android: initializationSettingsAndroid);
-
-      flutterLocalNotificationsPlugin!.initialize(initializationSettings);
-    }
+    _lecturerController =
+        TextEditingController(text: widget.document['lecturer']);
   }
 
   void _updateTimetable() async {
-    String course = _courseController.text.trim();
-    String date = _dateController.text.trim();
-    String time = _timeController.text.trim();
-    String venue = _venueController.text.trim();
+    await FirebaseFirestore.instance
+        .collection('timetables')
+        .doc(widget.document.id)
+        .update({
+      'courseCode': _courseController.text,
+      'day': _dayController.text,
+      'timeFrom': _timeFromController.text,
+      'timeTo': _timeToController.text,
+      'venue': _venueController.text,
+      'lecturer': _lecturerController.text,
+    });
 
-    if (course.isNotEmpty &&
-        date.isNotEmpty &&
-        time.isNotEmpty &&
-        venue.isNotEmpty) {
-      await FirebaseFirestore.instance
-          .collection('timetables')
-          .doc(widget.document.id)
-          .update({
-        'course': course,
-        'date': date,
-        'time': time,
-        'venue': venue,
-      });
-
-      if (!kIsWeb) {
-        // Trigger a local notification to simulate notifying users only on mobile
-        _triggerNotification();
-      }
-
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-            content: Text('Timetable updated and notification sent')),
-      );
-
-      Navigator.pop(context);
-    } else {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Please fill all fields')),
-      );
-    }
-  }
-
-  void _triggerNotification() async {
-    const AndroidNotificationDetails androidPlatformChannelSpecifics =
-        AndroidNotificationDetails(
-      'timetable_updates_channel', // Channel ID
-      'Timetable Updates', // Channel Name
-      channelDescription: 'This channel is used for timetable update notifications.',
-      importance: Importance.max,
-      priority: Priority.high,
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(content: Text('Timetable updated successfully!')),
     );
-    const NotificationDetails platformChannelSpecifics =
-        NotificationDetails(android: androidPlatformChannelSpecifics);
 
-    await flutterLocalNotificationsPlugin?.show(
-      0, // Notification ID
-      'Timetable Updated', // Notification Title
-      'A new timetable update has been made.', // Notification Body
-      platformChannelSpecifics,
-      payload: 'timetable_updates', // Optional payload for the notification
-    );
+    Navigator.pop(context);
   }
 
   @override
@@ -108,36 +62,47 @@ class _EditTimetableEntryScreenState extends State<EditTimetableEntryScreen> {
       ),
       body: Padding(
         padding: const EdgeInsets.all(16.0),
-        child: Column(
-          children: [
-            TextField(
-              controller: _courseController,
-              decoration: const InputDecoration(labelText: 'Course'),
-            ),
-            TextField(
-              controller: _dateController,
-              decoration:
-                  const InputDecoration(labelText: 'Date (e.g., 22/08/2024)'),
-            ),
-            TextField(
-              controller: _timeController,
-              decoration:
-                  const InputDecoration(labelText: 'Time (e.g., 12:00 PM)'),
-            ),
-            TextField(
-              controller: _venueController,
-              decoration: const InputDecoration(labelText: 'Venue'),
-            ),
-            const SizedBox(height: 20),
-            ElevatedButton(
-              onPressed: _updateTimetable,
-              child: const Text('Update Entry'),
-              style: ElevatedButton.styleFrom(
-                backgroundColor: Colors.blueAccent,
+        child: SingleChildScrollView(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              _buildTextField(_courseController, 'Course Code'),
+              const SizedBox(height: 16.0),
+              _buildTextField(_dayController, 'Day (e.g., Monday)'),
+              const SizedBox(height: 16.0),
+              _buildTextField(_timeFromController, 'Time (e.g., 12:00 PM)'),
+              const SizedBox(height: 16.0),
+              _buildTextField(_venueController, 'Venue'),
+              const SizedBox(height: 16.0),
+              _buildTextField(_lecturerController, 'Lecturer'),
+              const SizedBox(height: 20.0),
+              ElevatedButton(
+                onPressed: _updateTimetable,
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: Colors.blueAccent,
+                  padding: const EdgeInsets.symmetric(vertical: 16.0),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(8.0),
+                  ),
+                ),
+                child:
+                    const Text('Update Entry', style: TextStyle(fontSize: 16)),
               ),
-            ),
-          ],
+            ],
+          ),
         ),
+      ),
+    );
+  }
+
+  Widget _buildTextField(TextEditingController controller, String label) {
+    return TextField(
+      controller: controller,
+      decoration: InputDecoration(
+        labelText: label,
+        border: const OutlineInputBorder(),
+        filled: true,
+        fillColor: Colors.grey[200],
       ),
     );
   }

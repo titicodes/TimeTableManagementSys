@@ -26,12 +26,12 @@ class _StudentHomeScreenState extends State<StudentHomeScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('Student Dashboard'),
-        centerTitle: true,
-        backgroundColor: Colors.blueAccent,
-        elevation: 4,
-      ),
+      // appBar: AppBar(
+      //   title: const Text('Student Dashboard'),
+      //   centerTitle: true,
+      //   backgroundColor: Colors.blueAccent,
+      //   elevation: 4,
+      // ),
       body: Center(
         child: _widgetOptions.elementAt(_selectedIndex),
       ),
@@ -53,6 +53,7 @@ class _StudentHomeScreenState extends State<StudentHomeScreen> {
         unselectedLabelStyle: const TextStyle(color: Colors.black54),
         onTap: _onItemTapped,
         elevation: 8,
+        backgroundColor: Colors.white,
       ),
       floatingActionButton: FloatingActionButton(
         onPressed: () {
