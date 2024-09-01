@@ -1,3 +1,4 @@
+import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
@@ -13,6 +14,162 @@ class LoginScreen extends StatefulWidget {
   @override
   _LoginScreenState createState() => _LoginScreenState();
 }
+
+// class _LoginScreenState extends State<LoginScreen> {
+//   final _auth = FirebaseAuth.instance;
+//   final _emailController = TextEditingController();
+//   final _passwordController = TextEditingController();
+//   bool _isLoading = false;
+
+//   void _login() async {
+//     setState(() {
+//       _isLoading = true;
+//     });
+
+//     try {
+//       UserCredential userCredential = await _auth.signInWithEmailAndPassword(
+//         email: _emailController.text.trim(),
+//         password: _passwordController.text.trim(),
+//       );
+
+//       User? user = userCredential.user;
+
+//       if (user != null) {
+//         DocumentSnapshot userDoc = await FirebaseFirestore.instance
+//             .collection('users')
+//             .doc(user.uid)
+//             .get();
+
+//         String role = userDoc['role'];
+
+//         if (role == 'admin') {
+//           Navigator.pushReplacement(
+//             context,
+//             MaterialPageRoute(builder: (context) => const AdminHomeScreen()),
+//           );
+//         } else if (role == 'lecturer') {
+//           Navigator.pushReplacement(
+//             context,
+//             MaterialPageRoute(builder: (context) => const LecturerHomeScreen()),
+//           );
+//         } else if (role == 'student') {
+//           Navigator.pushReplacement(
+//             context,
+//             MaterialPageRoute(builder: (context) => const StudentHomeScreen()),
+//           );
+//         } else {
+//           ScaffoldMessenger.of(context).showSnackBar(
+//             SnackBar(content: Text('Unknown role: $role')),
+//           );
+//         }
+//       }
+//     } catch (e) {
+//       print(e);
+//       ScaffoldMessenger.of(context).showSnackBar(
+//         const SnackBar(content: Text('Login failed. Please try again.')),
+//       );
+//     } finally {
+//       setState(() {
+//         _isLoading = false;
+//       });
+//     }
+//   }
+
+//   void _navigateToSignup() {
+//     Navigator.pushNamed(context, '/signup');
+//   }
+
+//   void _navigateToQRLogin() {
+//     Navigator.push(
+//       context,
+//       MaterialPageRoute(builder: (context) => const ScanQRCodeScreen()),
+//     );
+//   }
+
+//   @override
+//   Widget build(BuildContext context) {
+//     return Scaffold(
+//       appBar: AppBar(
+//         title: const Text('Login'),
+//         backgroundColor: Colors.blueAccent,
+//       ),
+//       body: Center(
+//         child: SingleChildScrollView(
+//           padding: const EdgeInsets.all(16.0),
+//           child: Column(
+//             children: [
+//               const Icon(Icons.school, size: 100, color: Colors.blue),
+//               const SizedBox(height: 20),
+//               TextField(
+//                 controller: _emailController,
+//                 decoration: InputDecoration(
+//                   labelText: 'Email',
+//                   prefixIcon: const Icon(Icons.email),
+//                   border: OutlineInputBorder(
+//                     borderRadius: BorderRadius.circular(10),
+//                     borderSide: BorderSide(color: Colors.blueAccent),
+//                   ),
+//                   filled: true,
+//                   fillColor: Colors.grey[200],
+//                 ),
+//                 keyboardType: TextInputType.emailAddress,
+//               ),
+//               const SizedBox(height: 15),
+//               TextField(
+//                 controller: _passwordController,
+//                 decoration: InputDecoration(
+//                   labelText: 'Password',
+//                   prefixIcon: const Icon(Icons.lock),
+//                   border: OutlineInputBorder(
+//                     borderRadius: BorderRadius.circular(10),
+//                     borderSide: BorderSide(color: Colors.blueAccent),
+//                   ),
+//                   filled: true,
+//                   fillColor: Colors.grey[200],
+//                 ),
+//                 obscureText: true,
+//               ),
+//               const SizedBox(height: 20),
+//               _isLoading
+//                   ? const CircularProgressIndicator()
+//                   : ElevatedButton(
+//                       onPressed: _login,
+//                       style: ElevatedButton.styleFrom(
+//                         padding: const EdgeInsets.symmetric(
+//                           horizontal: 100,
+//                           vertical: 15,
+//                         ),
+//                         shape: RoundedRectangleBorder(
+//                           borderRadius: BorderRadius.circular(10),
+//                         ),
+//                         backgroundColor: Colors.blueAccent,
+//                       ),
+//                       child:
+//                           const Text('Login', style: TextStyle(fontSize: 16)),
+//                     ),
+//               const SizedBox(height: 20),
+//               TextButton(
+//                 onPressed: _navigateToSignup,
+//                 child: const Text(
+//                   'Create an Account',
+//                   style: TextStyle(color: Colors.blueAccent),
+//                 ),
+//               ),
+//               const SizedBox(height: 20),
+//               TextButton.icon(
+//                 onPressed: _navigateToQRLogin,
+//                 icon:
+//                     const Icon(Icons.qr_code_scanner, color: Colors.blueAccent),
+//                 label: const Text('Sign In with QR Code',
+//                     style: TextStyle(color: Colors.blueAccent)),
+//               ),
+//             ],
+//           ),
+//         ),
+//       ),
+//     );
+//   }
+// }
 
 class _LoginScreenState extends State<LoginScreen> {
   final _auth = FirebaseAuth.instance;
@@ -34,6 +191,9 @@ class _LoginScreenState extends State<LoginScreen> {
       User? user = userCredential.user;
 
       if (user != null) {
+        // Store the FCM token after a successful login
+        await _storeUserToken(user.uid);
+
         DocumentSnapshot userDoc = await FirebaseFirestore.instance
             .collection('users')
             .doc(user.uid)
@@ -106,7 +266,7 @@ class _LoginScreenState extends State<LoginScreen> {
                   prefixIcon: const Icon(Icons.email),
                   border: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(10),
-                    borderSide: BorderSide(color: Colors.blueAccent),
+                    borderSide: const BorderSide(color: Colors.blueAccent),
                   ),
                   filled: true,
                   fillColor: Colors.grey[200],
@@ -121,7 +281,7 @@ class _LoginScreenState extends State<LoginScreen> {
                   prefixIcon: const Icon(Icons.lock),
                   border: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(10),
-                    borderSide: BorderSide(color: Colors.blueAccent),
+                    borderSide: const BorderSide(color: Colors.blueAccent),
                   ),
                   filled: true,
                   fillColor: Colors.grey[200],
@@ -167,5 +327,14 @@ class _LoginScreenState extends State<LoginScreen> {
         ),
       ),
     );
+  }
+
+  Future<void> _storeUserToken(String userId) async {
+    String? token = await FirebaseMessaging.instance.getToken();
+    if (token != null) {
+      await FirebaseFirestore.instance.collection('users').doc(userId).update({
+        'fcmToken': token,
+      });
+    }
   }
 }

@@ -1,8 +1,36 @@
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:flutter_local_notifications/flutter_local_notifications.dart';
+
+// Define this globally or pass it from where it's initialized.
+final FlutterLocalNotificationsPlugin flutterLocalNotificationsPlugin =
+    FlutterLocalNotificationsPlugin();
 
 class AdminManageRequestsScreen extends StatelessWidget {
   const AdminManageRequestsScreen({super.key});
+
+  // Function to show a local notification to the lecturer
+  Future<void> _showLocalNotification(String status) async {
+    const AndroidNotificationDetails androidPlatformChannelSpecifics =
+        AndroidNotificationDetails(
+      'timetable_updates_channel', // Channel ID
+      'Timetable Updates', // Channel name
+      channelDescription:
+          'This channel is used for timetable update notifications.',
+      importance: Importance.high,
+      priority: Priority.high,
+    );
+
+    const NotificationDetails platformChannelSpecifics =
+        NotificationDetails(android: androidPlatformChannelSpecifics);
+
+    await flutterLocalNotificationsPlugin.show(
+      0,
+      'Timetable Edit Request $status',
+      'Your request to edit the timetable has been $status.',
+      platformChannelSpecifics,
+    );
+  }
 
   void _approveRequest(String requestId) async {
     await FirebaseFirestore.instance
@@ -10,7 +38,8 @@ class AdminManageRequestsScreen extends StatelessWidget {
         .doc(requestId)
         .update({'status': 'approved'});
 
-    // Optionally, you could add a notification to the lecturer here
+    // Show local notification to the lecturer
+    await _showLocalNotification('approved');
   }
 
   void _declineRequest(BuildContext context, String requestId) async {
@@ -42,6 +71,10 @@ class AdminManageRequestsScreen extends StatelessWidget {
                   'status': 'declined',
                   'adminComments': commentsController.text,
                 });
+
+                // Show local notification to the lecturer
+                await _showLocalNotification('declined');
+
                 Navigator.of(context).pop();
               },
               style: ElevatedButton.styleFrom(backgroundColor: Colors.red),
