@@ -13,7 +13,6 @@ class LecturerRequestStatusScreen extends StatelessWidget {
       appBar: AppBar(
         title: const Text('My Edit Requests'),
         centerTitle: true,
-        backgroundColor: Colors.blueAccent,
       ),
       body: StreamBuilder<QuerySnapshot>(
         stream: FirebaseFirestore.instance
@@ -39,7 +38,7 @@ class LecturerRequestStatusScreen extends StatelessWidget {
                 margin:
                     const EdgeInsets.symmetric(vertical: 8.0, horizontal: 16.0),
                 child: ListTile(
-                  title: Text('Course: ${request['course'] ?? 'N/A'}'),
+                  title: Text('Course: ${request['courseCode'] ?? 'N/A'}'),
                   subtitle: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
@@ -48,8 +47,6 @@ class LecturerRequestStatusScreen extends StatelessWidget {
                       Text('To: ${request['timeTo'] ?? 'N/A'}'),
                       Text('Venue: ${request['venue'] ?? 'N/A'}'),
                       Text('Status: ${request['status'] ?? 'N/A'}'),
-                      if (request['adminComments'] != null)
-                        Text('Admin Comments: ${request['adminComments']}'),
                     ],
                   ),
                 ),

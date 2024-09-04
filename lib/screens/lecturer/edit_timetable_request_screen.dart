@@ -65,7 +65,8 @@ class _EditTimetableRequestScreenState extends State<EditTimetableRequestScreen>
     return Scaffold(
       appBar: AppBar(
         title: const Text('Request Timetable Change'),
-        backgroundColor: Colors.blueAccent,
+       // backgroundColor: Colors.blueAccent,
+       automaticallyImplyLeading: false,
       ),
       body: Padding(
         padding: const EdgeInsets.all(16.0),

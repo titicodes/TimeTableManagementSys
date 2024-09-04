@@ -1,86 +1,24 @@
-import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 
 class LecturerTimetableScreen extends StatelessWidget {
   const LecturerTimetableScreen({super.key});
-
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        title: const Text('Lecturer Timetable'),
-        centerTitle: true,
-        automaticallyImplyLeading: false,
-       // backgroundColor: Colors.blueAccent,
-      ),
-      body: StreamBuilder<QuerySnapshot>(
-        stream: FirebaseFirestore.instance.collection('timetables').snapshots(),
-        builder: (context, snapshot) {
-          if (!snapshot.hasData) {
-            return const Center(child: CircularProgressIndicator());
-          }
-
-          final timetables = snapshot.data!.docs;
-
-          if (timetables.isEmpty) {
-            return const Center(
-              child: Text('No timetable available',
-                  style: TextStyle(fontSize: 18)),
-            );
-          }
-
-          return SingleChildScrollView(
-            scrollDirection: Axis.horizontal,
-            child: DataTable(
-              columns: const [
-                DataColumn(label: Text('Course Code')),
-                DataColumn(label: Text('Day')),
-                DataColumn(label: Text('From')),
-                DataColumn(label: Text('To')),
-                DataColumn(label: Text('Venue')),
-                DataColumn(label: Text('Lecturer')),
-                DataColumn(label: Text('Actions')),
-              ],
-              rows: timetables.map((timetable) {
-                return DataRow(cells: [
-                  DataCell(Text(timetable['courseCode'] ?? 'N/A')),
-                  DataCell(Text(timetable['day'] ?? 'N/A')),
-                  DataCell(Text(timetable['timeFrom'] ?? 'N/A')),
-                  DataCell(Text(timetable['timeTo'] ?? 'N/A')),
-                  DataCell(Text(timetable['venue'] ?? 'N/A')),
-                  DataCell(Text(timetable['lecturer'] ?? 'N/A')),
-                  DataCell(IconButton(
-                    icon: const Icon(Icons.edit, color: Colors.blueAccent),
-                    onPressed: () {
-                      _requestEdit(context, timetable);
-                    },
-                  )),
-                ]);
-              }).toList(),
-            ),
-          );
-        },
-      ),
-    );
-  }
 
   void _requestEdit(BuildContext context, DocumentSnapshot timetable) {
     showDialog(
       context: context,
       builder: (BuildContext context) {
         TextEditingController courseController =
-            TextEditingController(text: timetable['course']);
+            TextEditingController(text: timetable['courseCode']);
         TextEditingController dayController =
             TextEditingController(text: timetable['day']);
-        TextEditingController timeFromController =
+        TextEditingController fromTimeController =
             TextEditingController(text: timetable['timeFrom']);
-        TextEditingController timeToController =
+        TextEditingController toTimeController =
             TextEditingController(text: timetable['timeTo']);
         TextEditingController venueController =
             TextEditingController(text: timetable['venue']);
-        TextEditingController lecturerController =
-            TextEditingController(text: timetable['lecturer']);
 
         return AlertDialog(
           title: const Text('Request Timetable Edit',
@@ -97,20 +35,16 @@ class LecturerTimetableScreen extends StatelessWidget {
                   decoration: const InputDecoration(labelText: 'Day'),
                 ),
                 TextField(
-                  controller: timeFromController,
-                  decoration: const InputDecoration(labelText: 'From'),
+                  controller: fromTimeController,
+                  decoration: const InputDecoration(labelText: 'From Time'),
                 ),
                 TextField(
-                  controller: timeToController,
-                  decoration: const InputDecoration(labelText: 'To'),
+                  controller: toTimeController,
+                  decoration: const InputDecoration(labelText: 'To Time'),
                 ),
                 TextField(
                   controller: venueController,
                   decoration: const InputDecoration(labelText: 'Venue'),
-                ),
-                TextField(
-                  controller: lecturerController,
-                  decoration: const InputDecoration(labelText: 'Lecturer'),
                 ),
               ],
             ),
@@ -129,12 +63,11 @@ class LecturerTimetableScreen extends StatelessWidget {
                     .collection('edit_requests')
                     .add({
                   'timetableId': timetable.id,
-                  'course': courseController.text,
+                  'courseCode': courseController.text,
                   'day': dayController.text,
-                  'timeFrom': timeFromController.text,
-                  'timeTo': timeToController.text,
+                  'timeFrom': fromTimeController.text,
+                  'timeTo': toTimeController.text,
                   'venue': venueController.text,
-                  'lecturer': lecturerController.text,
                   'lecturerId': FirebaseAuth.instance.currentUser?.uid,
                   'status': 'pending',
                 });
@@ -149,6 +82,82 @@ class LecturerTimetableScreen extends StatelessWidget {
           ],
         );
       },
+    );
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(
+        title: const Text('Lecturer Timetable'),
+        centerTitle: true,
+       // backgroundColor: Colors.blueAccent,
+       automaticallyImplyLeading: false,
+      ),
+      body: StreamBuilder<QuerySnapshot>(
+        stream: FirebaseFirestore.instance.collection('timetables').snapshots(),
+        builder: (context, AsyncSnapshot<QuerySnapshot> snapshot) {
+          if (!snapshot.hasData) {
+            return const Center(child: CircularProgressIndicator());
+          }
+
+          final timetables = snapshot.data!.docs;
+
+          if (timetables.isEmpty) {
+            return const Center(
+              child: Text('No timetable available',
+                  style: TextStyle(fontSize: 18)),
+            );
+          }
+
+          return Padding(
+            padding: const EdgeInsets.all(16.0),
+            child: ListView.builder(
+              itemCount: timetables.length,
+              itemBuilder: (context, index) {
+                final timetable = timetables[index];
+                return Card(
+                  margin: const EdgeInsets.symmetric(vertical: 8.0),
+                  elevation: 5,
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(15.0),
+                  ),
+                  child: ListTile(
+                    contentPadding: const EdgeInsets.all(16.0),
+                    title: Text(
+                      timetable['courseCode'],
+                      style: const TextStyle(
+                          fontWeight: FontWeight.bold, fontSize: 20),
+                    ),
+                    subtitle: Padding(
+                      padding: const EdgeInsets.only(top: 8.0),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text('Day: ${timetable['day']}',
+                              style: TextStyle(color: Colors.grey[700])),
+                          Text('From Time: ${timetable['timeFrom']}',
+                              style: TextStyle(color: Colors.grey[700])),
+                          Text('To Time: ${timetable['timeTo']}',
+                              style: TextStyle(color: Colors.grey[700])),
+                          Text('Venue: ${timetable['venue']}',
+                              style: TextStyle(color: Colors.grey[700])),
+                        ],
+                      ),
+                    ),
+                    trailing: IconButton(
+                      icon: const Icon(Icons.edit, color: Colors.blueAccent),
+                      onPressed: () {
+                        _requestEdit(context, timetable);
+                      },
+                    ),
+                  ),
+                );
+              },
+            ),
+          );
+        },
+      ),
     );
   }
 }

@@ -2,9 +2,10 @@ import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:intl/intl.dart';
+import 'package:firebase_messaging/firebase_messaging.dart';
 
 class SignupScreen extends StatefulWidget {
-  const SignupScreen({Key? key}) : super(key: key);
+  const SignupScreen({super.key});
 
   @override
   _SignupScreenState createState() => _SignupScreenState();
@@ -35,32 +36,6 @@ class _SignupScreenState extends State<SignupScreen> {
   }
 
   void _signup() async {
-    if (_fullNameController.text.trim().isEmpty) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Please enter your full name')),
-      );
-      return;
-    }
-    if (_selectedDob == null) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Please select your date of birth')),
-      );
-      return;
-    }
-    if (_emailController.text.trim().isEmpty ||
-        !_emailController.text.contains('@')) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Please enter a valid email address')),
-      );
-      return;
-    }
-    if (_passwordController.text.trim().length < 6) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Password must be at least 6 characters')),
-      );
-      return;
-    }
-
     setState(() {
       _isLoading = true;
     });
@@ -84,6 +59,9 @@ class _SignupScreenState extends State<SignupScreen> {
           'role': _selectedRole,
         });
 
+        // Subscribe the new user to the timetable updates topic
+        await FirebaseMessaging.instance.subscribeToTopic('timetable_updates');
+
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(content: Text('Signup successful! Please log in.')),
         );
@@ -91,16 +69,8 @@ class _SignupScreenState extends State<SignupScreen> {
         Navigator.pushReplacementNamed(context, '/login');
       }
     } catch (e) {
-      String errorMessage = 'Failed to sign up';
-      if (e is FirebaseAuthException) {
-        if (e.code == 'email-already-in-use') {
-          errorMessage = 'This email address is already in use.';
-        } else if (e.code == 'weak-password') {
-          errorMessage = 'The password provided is too weak.';
-        }
-      }
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text(errorMessage)),
+        SnackBar(content: Text('Failed to sign up: ${e.toString()}')),
       );
     } finally {
       setState(() {
@@ -191,7 +161,6 @@ class _SignupScreenState extends State<SignupScreen> {
                     _selectedRole = value!;
                   });
                 },
-                isExpanded: true, // Make dropdown full width
               ),
               const SizedBox(height: 20),
               _isLoading
@@ -204,8 +173,6 @@ class _SignupScreenState extends State<SignupScreen> {
                         shape: RoundedRectangleBorder(
                           borderRadius: BorderRadius.circular(8.0),
                         ),
-                        minimumSize:
-                            const Size(double.infinity, 50), // Full width
                       ),
                       child:
                           const Text('Signup', style: TextStyle(fontSize: 16)),

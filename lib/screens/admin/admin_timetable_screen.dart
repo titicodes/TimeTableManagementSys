@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
-
 import 'edit_timetable_entry_screen.dart';
 
 class AdminTimetableScreen extends StatelessWidget {
@@ -29,7 +28,6 @@ class AdminTimetableScreen extends StatelessWidget {
               fontSize: 18, fontWeight: FontWeight.w600, color: Colors.black),
         ),
         centerTitle: true,
-        // backgroundColor: Colors.blueAccent,
       ),
       body: StreamBuilder(
         stream: FirebaseFirestore.instance.collection('timetables').snapshots(),

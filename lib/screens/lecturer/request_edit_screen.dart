@@ -30,7 +30,7 @@ class _RequestEditScreenState extends State<RequestEditScreen> {
     // Submit the request to Firestore (to be handled by Admin)
     await FirebaseFirestore.instance.collection('edit_requests').add({
       'timetableId': widget.timetableId, // Track the timetable ID
-      'course': course,
+      'courseCode': course,
       'reason': reason,
       'status': 'pending',
       'lecturerId': FirebaseAuth.instance.currentUser!.uid,
